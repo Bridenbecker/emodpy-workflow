@@ -152,8 +152,13 @@ to show how easy it is to change parameters, make changes to the campaign, and p
 ## 5. Brief introduction to Calibration
 
 In [this tutorial](calibration_intro.md), you will do your first simple calibration with emodpy-workflow.
-You will learn how to specify reference data and the hyperparameters to calibrate.  However, it is
-not intended to teach the art/science of calibration.
+You will learn how to specify reference data and the hyperparameters to calibrate. You will also learn how to resample
+a calibration process (select calibrated parameterizations). However, it is not intended to teach the art/science of 
+calibration.
+
+# 5.5 Using a Calibration (Parameterizations)
+
+[This tutorial](using_a_calibration.md) will show you how to use a calibration as input to configure and run EMOD. 
 
 ## 6. Learn how to create scenarios and do sweeps
 

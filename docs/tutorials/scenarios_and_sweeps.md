@@ -1,14 +1,5 @@
 # Learn how to create scenarios and do sweeps
 
-TODO: the following is a good idea
-
-- Add distribution of vaccine on STIDebut to vaccine/campaign.py 
-- What about doing it on their 15th birthday instead?  Simulate an annual checkup
-
-TODO: ensure the run command and sample count discussion at the end lines up with the prior tutorials
-
-TODO: anything else at the end?
-
 ## **What is a scenario or sweep?**
 
 A scenario (sweep) is a set of hyperparameters and values that will be applied to a frame. One can think of them as 
@@ -33,7 +24,7 @@ frame_name = FILL_IN_NAME_OF_FRAME_TO_USE
 # A sweep python file must contain a 'parameter_sets' attribute, which is a dict with keys being names of
 # frames and values being dicts of param_name:value entries OR a generator of such dicts
 parameter_sets = {
-    # This key indicates the contained information is for building off the 'hiv_vaccine' frame
+    # This key indicates the contained information is for building off the specified frame
     frame_name: {
         # Each dict in 'sweeps' list is a set of param: value overrides to be applied. A scenario.
         # Note that the parameter lists are arbitrary. Each scenario can include as many or few parameters
@@ -53,21 +44,19 @@ To modify the above for practical use requires:
 - filling in the name of the frame to use
 - filling in one or more sets of hyperparameters to modify
 
-The following is a basic functional example intended to be used with the sequence of tutorials in emodpy-workflow. It
-creates five scenarios.
+The following is a basic creates four scenarios on top of the **baseline** frame, the fourth of which makes no changes. 
 
-**Copy/paste** it into a file named **sweeps_vaccine.py** in your project directory.
+**Copy/paste** it into a file named **sweeps.py** in your project directory.
 
 ```python
-frame_name = 'hiv_vaccine'
+frame_name = 'baseline'
 parameter_sets = {
     frame_name: {
         'sweeps': [
-            {'experiment_name': 'no_efficacy',          'vaccine_efficacy': 0.0},
-            {'experiment_name': 'low_efficacy',         'vaccine_efficacy': 0.25},
-            {'experiment_name': 'medium_efficacy',      'vaccine_efficacy': 0.5},
-            {'experiment_name': 'medium_high_efficacy', 'vaccine_efficacy': 0.75},
-            {'experiment_name': 'high_efficacy',        'vaccine_efficacy': 1.0},
+            {'experiment_name': 'coital_act_rate_COMMERCIAL_low',    'coital_act_rate--COMMERCIAL': 0.001},
+            {'experiment_name': 'coital_act_rate_COMMERCIAL_medium', 'coital_act_rate--COMMERCIAL': 0.005},
+            {'experiment_name': 'coital_act_rate_COMMERCIAL_high',   'coital_act_rate--COMMERCIAL': 0.01},
+            {'experiment_name': 'coital_act_rate_COMMERCIAL_standard'},
         ]
     }
 }
@@ -79,15 +68,37 @@ Sweep files are inputs to the **run** command. They are optional. Not specifying
 as-is (no changes).
 
 When specified as an input to **run**, one experiment is created per 'sweeps' entry, each containing one simulation per
-(calibrated) parameterization in the provided sample file.
+(calibrated) parameterization in the sample file (if provided). Otherwise, one simulation is contained per experiment.
 
-The following command combines the above sweeps file that varies vaccine_efficacy with the previously generated
-calibration samples.
+The following command utilizes the above sweeps file that varies hyperparameter coital_act_rate--COMMERCIAL (with no 
+samples).
 
-Since there are five sweep entries and three samples, the command will generate:
-one suite of five experiments of three simulations, or 1 * 5 * 3 = 15 simulations in total.
+Since there are four sweep entries, the command will generate:
+one suite of four experiments of one simulation1, or 1 * 4 * 1 = 4 simulations in total.
 
 ```bash
-python -m emodpy_workflow.scripts.run -F hiv_vaccine -N vaccine_scenarios -o output -p ContainerPlatform -s samples.csv -S sweeps_vaccine.py
+python -m emodpy_workflow.scripts.run -F baseline -N commercial_sex_scenarios -o output -p ContainerPlatform -S sweeps.py
 ```
 
+## **Downloading scenario output file(s)**
+
+Output file(s) from completed simulation(s) can be obtained via the **download** command. The following will download
+the InsetChart.json file from each simulation in each experiment in teh prior **run** execution:
+
+```bash
+python -m emodpy_workflow.scripts.download -f output/InsetChart.json -r output/experiment_index.csv -p ContainerPlatform
+```
+
+## **Plotting results**
+
+The built-in **plot_inset_chart_mean_compare** command is able to plot several experiments of InsetChart.json data for
+intercomparison. The following will plot data from the files just downloaded, one colored line per experiment (its 
+average of one simulation each):
+
+```bash
+python -m emodpy_hiv.plotting.plot_inset_chart_mean_compare output/coital_act_rate_COMMERCIAL_low--0/InsetChart/ output/coital_act_rate_COMMERCIAL_medium--1/InsetChart/ output/coital_act_rate_COMMERCIAL_high--2/InsetChart/ -o plots
+```
+
+A generated .png file will be located at: **plots\InsetChart_Compare.png** for inspection. E.g.
+
+![image](../images/InsetChart_Compare.png)
