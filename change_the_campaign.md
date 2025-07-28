@@ -1,5 +1,3 @@
-from emodpy_hiv.country_model import Country
-
 # Change the campaign
 
 ## Campaign Basics
